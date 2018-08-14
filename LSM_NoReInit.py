@@ -75,20 +75,22 @@ def energy(img,mew, phi, lamda, v, epsilon, Ix, Iy):
     
 
 def process(img, img_gray):
-    phi = -4.0*np.ones(img_gray.shape,'float32')
+    phi = -2.0*np.ones(img_gray.shape,'float32')
     # """for circle image (center)"""
-    # phi[50:200, 50:200] = 4
+    phi[100:101, :] = 2
+    # phi[50:100, 50:100] = 2
     # """for circle image (buttom-right)"""
     # phi[200:230, 200:240] = 4
     """for pipeline images"""
-    phi[200:460, 200:568] = 4
+    # phi[200:460, 200:568] = 4
+    # phi[460:470, :] = 4
     """TRY PHI TO LINE FUNCTION!!!!"""    
     # plt.imshow(phi)
     # plt.show()
 
     mew = 0.01
     lamda = 0.005 
-    v = 0.005
+    v = 0.005 #initial inside: -
     epsilon = 2.0
     time = 1.0
     sigma = 1
@@ -133,7 +135,7 @@ def process(img, img_gray):
         # print "vvvvvvvvvvvvvv"
         # print phi.shape
         # print internal.shape, external_length.shape, external_area.shape
-        phi = phi+(time*(internal+external_length-external_area-(beta*E)))
+        phi = phi+(time*(internal+external_length+external_area-(beta*E)))
         # phi = phi+(time*(internal+external_length-external_area))
         phi = phi.astype('float32')
         # print "________________________________"
@@ -155,9 +157,9 @@ def process(img, img_gray):
     plt.show()
 
 if __name__ == "__main__":
-    img = cv2.imread('Feature.png')
+    # img = cv2.imread('Feature.png')
     # img = cv2.imread('image_RTheta.jpg')
-    # img = cv2.imread('fig2.jpg')
+    img = cv2.imread('fig2.jpg')
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     process(img, img_gray)
     # print img.dtype
