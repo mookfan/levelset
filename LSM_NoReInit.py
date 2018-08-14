@@ -48,8 +48,7 @@ def energy(img,mew, phi, lamda, v, epsilon, Ix, Iy):
     # print "+++"
     edge = np.sqrt(np.square(Ix)+np.square(Iy))
     g = 1.0/(1.0+(edge**2))
-    # # print g.max(), g.min()
-    # # print b
+
 
     """!!!!!!!THIS MAKE THE RESULT AS RIPPLES!!!!!!!!!!!!"""
     norm_Gx_length = g*norm_Gx
@@ -104,6 +103,10 @@ def process(img, img_gray):
     """Edge_sobel"""
     Ix = cv2.Sobel(img_smooth,cv2.CV_32F,1,0)
     Iy = cv2.Sobel(img_smooth,cv2.CV_32F,0,1)
+    # edge = np.sqrt(np.square(Ix)+np.square(Iy))
+    # g = 1.0/(1.0+(edge**2))
+    # plt.imshow(g)
+    # plt.show()
     """Edge_gradient"""
     # Iy, Ix = np.gradient(img_smooth)
 
