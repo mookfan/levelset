@@ -75,27 +75,25 @@ def energy(img,mew, phi, lamda, v, epsilon, Ix, Iy):
     
 
 def process(img, img_gray):
-    phi = -2.0*np.ones(img_gray.shape,'float32')
+    coeff_phi = 2
+    phi = (-1*coeff_phi)*np.ones(img_gray.shape,'float32')
     # """for circle image (center)"""
-    phi[100:101, :] = 2
-    # phi[50:100, 50:100] = 2
+    phi[100:101, :] = coeff_phi
+    # phi[50:100, 50:100] = coeff_phi
     # """for circle image (buttom-right)"""
-    # phi[200:230, 200:240] = 4
+    # phi[200:230, 200:240] = coeff_phi
     """for pipeline images"""
-    # phi[200:460, 200:568] = 4
-    # phi[460:470, :] = 4
-    """TRY PHI TO LINE FUNCTION!!!!"""    
-    # plt.imshow(phi)
-    # plt.show()
+    # phi[100:200, 100:200] = coeff_phi
+    # phi[348:360, 440:525] = coeff_phi
 
-    mew = 0.01
-    lamda = 0.005 
-    v = 0.005 #initial inside: -
-    epsilon = 2.0
-    time = 1.0
-    sigma = 1
+    mew = 0.01 #0.01
+    lamda = 0.05 #0.005 
+    v = 0.005 #-0.005 #initial inside: -
+    epsilon = 2.0 #2.0
+    time = 1.0 #1.0
+    sigma = 1 #1
     iter = 1000
-    beta = 1.0
+    beta = 1.0 #1.0
     """smooth to denoise"""
     img_smooth = scipy.ndimage.filters.gaussian_filter(img_gray, sigma)
     plt.imshow(img_smooth)
