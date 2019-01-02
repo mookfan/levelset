@@ -16,23 +16,6 @@ def process ():
     start_range = 0.0
     stop_range = 30.0
 
-    """CAFAR Parameters"""
-    box_size = 41
-    guard_size = 31
-    pfa = 0.2
-    size = 3
-    morp_kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (size, size))
-
-    # """gamma params"""
-    # shape_pipe = 33811.17
-    # loc_pipe = -6640.13
-    # scale_pipe = 0.20
-    # shape_bg = 58.79
-    # loc_bg = -125.25
-    # scale_bg = 3.31
-    #
-    # gamma_param = [[shape_pipe, loc_pipe, scale_pipe], [shape_bg, loc_bg, scale_bg]]
-
     """gaussian params"""
     mean_pipe = 115.69
     std_pipe = 43.79
@@ -45,27 +28,14 @@ def process ():
     bool_count = True
     iteration = 550
 
-    """mask-manual for eta term"""
-    # mask_bg = cv2.imread(r"C:\Users\RSDFL-PC01\PycharmProjects\Mook work\mask_bg.png", 0)
-    # mask_bg = (1 * (mask_bg==255)) + (0 * (mask_bg==0))
-    # print("mask: ", mask_bg.max(), mask_bg.min())
+
     prob_p = 13797./364000
     prob_bg = 350200./364000
     eta = 0.25 * np.log10(prob_bg / prob_p)
     print("eta: ", eta)
-    # mean_pipe = int(115.68)
-    # map_obj_bg=norm.pdf(x=np.arange(0.0, 255.0, 1.0), loc=gauss_param[0][0], scale=gauss_param[0][1])
-    # plt.title("prob obj")
-    # plt.plot(map_obj_bg, linewidth=1)
-    # plt.show()
-    # mean_pipe = map_obj_bg[mean_pipe]
-    # print("mean pipe: ", mean_pipe)
     start_bool=True
-    scene=15
-    # if(start_bool):
-    #     type = "multilook"
-    # else:
-    #     type = "normal"
+    scene=15 #15
+
     for i in range(scene, 145,2): #10, 130
         # imagepath = r"C:\Users\mook\Downloads\multilook.png"
         # img = cv2.imread(imagepath)
@@ -180,7 +150,10 @@ def process ():
         plt.yticks(y, y_new)
         plt.xlabel('theta(degree)', fontsize=15)
         plt.ylabel('range(meters)', fontsize=15)
-        plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\301218(ver4.3)\frame_" + str(i) + "_result.png")
+        plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\021219(ver.4.3)\frame_" + str(i) + "_result.png")
+
+        phi_save = (255*(phi_added>0))+(0*(phi_added<=0))
+        cv2.imwrite(r"C:\Users\mook\PycharmProjects\LSM\experiment\021219(ver.4.3)\frame_" + str(i) + "_res.png",phi_save)
         # plt.show()
 
         phi_comp=(0*(phi_added==0))+(255*(phi_added>0))
@@ -192,7 +165,7 @@ def process ():
         plt.yticks(y, y_new)
         plt.xlabel('theta(degree)', fontsize=15)
         plt.ylabel('range(meters)', fontsize=15)
-        plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\301218(ver4.3)\frame_" + str(i) + "_accuracy.png")
+        plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\021219(ver.4.3)\frame_" + str(i) + "_accuracy.png")
         # plt.show()
 
         poly_function_pre=poly_function

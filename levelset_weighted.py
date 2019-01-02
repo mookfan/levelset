@@ -494,7 +494,7 @@ def levelset_cal(img_gray, phi_first, iterations, gauss_param, index, eta, start
             CS = plt.contour(phi_old, 0, colors='r', linewidths=2)
             plt.draw()
             if (i==iterations):
-                plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\301218(ver4.3)\frame_" + str(index) + "_levelset.png")
+                plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\021219(ver.4.3)\frame_" + str(index) + "_levelset.png")
             plt.show()
             plt.pause(0.05)
             plt.clf()

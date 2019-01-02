@@ -36,23 +36,30 @@ def endpoint_cal(img_gray):
     rows, cols = ske.shape
     canvas = np.zeros(ske.shape, np.float32)
 
+    ske_pad = np.pad(ske, [1, 1], mode='constant')
+    # pipe_arr = np.nonzero(ske_pad)
     pipe_arr = np.nonzero(ske)
     pos_y, pos_x = pipe_arr[0], pipe_arr[1]
     points = []
     # branch = []
+    # plt.imshow(ske_pad)
+    # plt.title("ske_pad")
+    # plt.show()
     for i in range(0, len(pos_y)):
-        if (pos_y[i] < rows - 1 and pos_x[i] < cols - 1):  # for win 3*3
+        if (pos_y[i] < rows  and pos_x[i] < cols ):  # for win 3*3
+            # window = ske_pad[pos_y[i] - 1:pos_y[i] + 2, pos_x[i] - 1:pos_x[i] + 2]
             window = ske[pos_y[i] - 1:pos_y[i] + 2, pos_x[i] - 1:pos_x[i] + 2]
             conv = np.mean(window)
             # canvas[pos_y[i], pos_x[i]] = conv
             """end point"""
-            if (conv <= (0.25)):
+            if (0< conv <= (0.25)):
                 points.append([pos_y[i], pos_x[i], 1])
                 cv2.circle(canvas, (pos_x[i], pos_y[i]), 5, (255, 255, 255), -1)
             # if (conv>=0.4): #Not child (4/9)
             #     print("branch point")
             #     branch.append([rows[i], cols[i], 1])
             #     cv2.circle(canvas, (pos_x[i], pos_y[i]), 5, (255, 255, 255), -1)
+    # print("points of skeleton: ", points)
     # plt.imshow(canvas)
     # plt.title("skeleton conv")
     # plt.show()
@@ -67,9 +74,9 @@ def endpoint_cal(img_gray):
     #     else:
     #         points.append(branch[i])
 
-    canvas2 = np.zeros(ske.shape, np.float32)
-    for i in range(0, len(points)):
-        cv2.circle(canvas2, (points[i][1], points[i][0]), 5, (255, 255, 255), -1)
+    # canvas2 = np.zeros(ske.shape, np.float32)
+    # for i in range(0, len(points)):
+    #     cv2.circle(canvas2, (points[i][1], points[i][0]), 5, (255, 255, 255), -1)
     # plt.imshow(canvas2)
     # plt.title("eliminate end point which is branch")
     # plt.show()
@@ -84,11 +91,13 @@ def endpoint_cal(img_gray):
         p[2] = class_value
     values = set(map(lambda x: x[2], points))
     new_point = [[(y[0], y[1], y[2]) for y in points if y[2] == x] for x in values]
-    # print("new point: ", new_point)
+    print("class point: ", new_point)
+
 
     two_endpoint = []
     for i in range (0, len(new_point)):
         group = new_point[i]
+        print("group: ", group)
         if(len(group)>2):
             point_elimination = np.asarray(group)
             dist = pdist(point_elimination, 'euclidean')
@@ -104,8 +113,14 @@ def endpoint_cal(img_gray):
             two_endpoint.append(group[1])
         elif(len(group)==1): # one point case
             two_endpoint.append(group[0])
-    # print("two point: ", two_endpoint)
+    print("two point: ", two_endpoint)
 
+    two_endpoint_arr = np.asarray(two_endpoint)
+    p = np.where(two_endpoint_arr[:2]==0)
+    for i in range (len(p[0])-1, -1, -1):
+        index_zero_class = p[0][i]
+        two_endpoint.pop(index_zero_class)
+    print("eliminate zero class: ", two_endpoint)
 
 
     """assign priority to each points"""
@@ -119,7 +134,7 @@ def endpoint_cal(img_gray):
         priority_label.append(((num/total_pix_label), i))
     # # """sort max to min area (labeled)"""
     priority_label = sorted(priority_label, reverse=True)
-    # print("probability of labeled pixels : ", priority_label)
+    print("probability of labeled pixels : ", priority_label)
 
     """map probability to each point"""
     points = []
@@ -136,9 +151,9 @@ def endpoint_cal(img_gray):
         elif(len(search[0])==1):
             pos_1 = search[0][0]
             points.append((two_endpoint[pos_1][0], two_endpoint[pos_1][1], priority_label[i][0]))
-    # print("point: ", points)
+    print("point: ", points)
 
-    return points, priority_label
+    return points, priority_label, canvas
 
 def connect_estimation(points, paper, map_label):
     img_gray = paper.copy()
@@ -158,9 +173,18 @@ def connect_estimation(points, paper, map_label):
     """point:  [(82, 701, 0.9), (348, 403, 0.9), (5, 724, 0.04), (20, 725, 0.04), (55, 708, 0.03), (56, 707, 0.03)]"""
     """check which directions of pipeline (most probability)"""
     straigth_dis = 10
-    """points will arrange from lower-row to higher-row [top to bottom] so just check for col directions"""
+
+    dif_class = False
+    if(len(points)==2):
+        class_1 = points[0][2]
+        class_2 = points[1][2]
+        if(class_1!=class_2):
+            dif_class = True
+            points = sorted(points)
+
     row_1, col_1 = points[0][0], points[0][1]
     row_2, col_2 = points[1][0], points[1][1]
+
     curve_bool = False
     left_curve_bool = False
     rigth_curve_bool = False
@@ -188,13 +212,19 @@ def connect_estimation(points, paper, map_label):
     """cal minimum distance between max area and other point"""
 
 
-    new_point = [(y[0], y[1], y[2]) for y in points if y[2] >= 0.3]
+    new_point = [(y[0], y[1], y[2]) for y in points if y[2] >= 0.2]
     print("new point: ", new_point)
 
     filter_area = []
     # count=0
+    if(len(new_point)==2):
+        if(new_point[0][2]==new_point[1][2]): # same label
+            connect_bool = False
+        else:
+            connect_bool = True
     """confirm that there are more than 1 area that must be connected"""
-    if(len(points)>2):
+    # if(len(points)>2 or connect_bool):
+    if(len(points)>=2):
         for i in range (0, len(new_point)):
             """ref_1 = points[0] #top
                 ref_2 = points[1] #bottom"""
@@ -231,10 +261,14 @@ def connect_estimation(points, paper, map_label):
                 points_i_arr = np.asarray(points_i)
                 b = np.where(points_i_arr[:]==group)
                 # print("b: ", b)
-                b1, b2 = b[0][0], b[0][1]
-                """pop 2 maximum"""
-                points_i.pop(b1)
-                points_i.pop(b2-1)
+                if(len(b[0])==2): #normal case
+                    b1, b2 = b[0][0], b[0][1]
+                    """pop 2 maximum"""
+                    points_i.pop(b1)
+                    points_i.pop(b2-1)
+                elif(len(b[0])==1):
+                    b1 = b[0][0]
+                    points_i.pop(b1)
                 # print("points i: ", points_i)
 
                 points_xy = []
@@ -242,6 +276,12 @@ def connect_estimation(points, paper, map_label):
                     a = points_i[l]
                     points_xy.append(a[:len(a) - 1])
                 print("points xy: ", points_xy)
+
+            if(points_xy==[]): #two points are same label
+                for l in range(0, len(points)):
+                    a = points[l]
+                    points_xy.append(a[:len(a) - 1])
+                print("points xy(2 points same area): ", points_xy)
 
             dis = cdist(ref_point, points_xy)
             # print(dis)
@@ -258,7 +298,14 @@ def connect_estimation(points, paper, map_label):
                 print("angle: ", angle)
                 print("delta y: ", delta_y)
                 # cv2.line(paper, (ref_x, ref_y), (p_x, p_y), (0, 255, 255))
-                if(i%2==0 or i==0): #top
+                if(dif_class): #only teo element and different class
+                    if (top_angle_min <= angle <= top_angle_max):
+                        print("two diff class")
+                        filter_area.append(group)
+                        filter_area.append(points_i[dist_pos[j]][2])
+                        cv2.line(paper, (ref_x, ref_y), (p_x, p_y), (255, 255, 0), thickness=4)
+
+                elif(i%2==0 or i==0): #top
                     if(delta_y > 0):
                         if(top_angle_min<=angle<=top_angle_max):
                             print("top")
@@ -348,7 +395,8 @@ def join(img, scene, poly_function_pre):
         img = img.astype(np.uint8)
         img = reduce_noise(img)
         img_rgb = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        points, map_label = endpoint_cal(img)
+        points, map_label, point_ske = endpoint_cal(img)
+        cv2.imwrite(r"C:\Users\mook\PycharmProjects\LSM\experiment\021219(ver.4.3)\frame_" + str(scene) + "_points.png", point_ske)
         paper = img.copy()
         # print(paper.shape)
         paper = cv2.cvtColor(paper, cv2.COLOR_GRAY2BGR)
@@ -356,12 +404,14 @@ def join(img, scene, poly_function_pre):
 
         plt.imshow(paper)
         plt.title("connected "+ str(scene))
-        plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\301218(ver4.3)\frame_" + str(scene) + "_coonected_points.png")
+        plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\021219(ver.4.3)\frame_" + str(scene) + "_coonected_points.png")
 
-        plt.imshow(labeled)
-        plt.title("labeled frame"+str(scene))
-        plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\301218(ver4.3)\frame_" + str(scene) + "_labeled.png")
-        # plt.show()
+        lab_save = (0*(labeled==0))+(255*(labeled!=0))
+        cv2.imwrite(r"C:\Users\mook\PycharmProjects\LSM\experiment\021219(ver.4.3)\frame_" + str(scene) + "_labeled.png", lab_save)
+        # plt.imshow(labeled)
+        # plt.title("labeled frame"+str(scene))
+        # plt.savefig(r"C:\Users\mook\PycharmProjects\LSM\experiment\301218(ver4.3)\frame_" + str(scene) + "_labeled.png")
+        # # plt.show()
 
         poly_function, x_new = estimate_polynomial(labeled)
         if(poly_function is None or x_new is None):
