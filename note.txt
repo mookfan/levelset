@@ -1,0 +1,2 @@
+mode = eliminate
+start_bool, start_fig = not yet
