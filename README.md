@@ -1,1 +1,2 @@
 # levelset
+`python main.py`
