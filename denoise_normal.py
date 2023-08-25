@@ -1,14 +1,10 @@
 import cv2
-# import math
 import numpy as np
-# import tensorflow as tf
-# import scipy.ndimage
-# import matplotlib.pyplot as plt
 
 
 def denoise_range (img, start_range, stop_range):
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img_gray = img_gray.astype(np.float32)
+    # img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_gray = img.astype(np.float32)
 
     rows, cols = img_gray.shape
     range_resolution = stop_range / rows
