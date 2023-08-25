@@ -92,39 +92,37 @@ def direction_est(img):
     print("angle: ", angle)
     if(5<=angle<=70):
         """added"""
-        # if (y_max < row):
-        #     for i in range(y_max, row):
-        #         point_x.append(x_ymax)
-        #         point_y.append(i)
+        if (y_max < row):
+            for i in range(y_max, row):
+                point_x.append(x_ymax)
+                point_y.append(i)
         if(x_ymin>x_ymax):
             mode = "right"
             print("right /")
             cv2.putText(labeled_save, 'right', (5, 20), font, 1, (255, 255, 255), 1, cv2.LINE_AA)
-            # for k in range(0, len(point_x)):
-            #     for i in range(0, col):
-            #         for j in range(0, row):
-            #             if (i >= point_x[k] and j >= point_y[k]):
-            #                 canvas[j][i] = 1
+            for k in range(0, len(point_x)):
+                for i in range(0, col):
+                    for j in range(0, row):
+                        if (i >= point_x[k] and j >= point_y[k]):
+                            canvas[j][i] = 1
         elif(x_ymin<x_ymax):
             mode = "left"
             print("left \\")
             cv2.putText(labeled_save, 'left', (5, 20), font, 1, (96, 186, 255), 1, cv2.LINE_AA)
-            # for k in range(0, len(point_x)):
-            #     for i in range(0, col):
-            #         for j in range(0, row):
-            #             if (i <= point_x[k] and j >= point_y[k]):
-            #                 canvas[j][i] = 1
+            for k in range(0, len(point_x)):
+                for i in range(0, col):
+                    for j in range(0, row):
+                        if (i <= point_x[k] and j >= point_y[k]):
+                            canvas[j][i] = 1
     elif(75<=angle<=90):
         mode = "straight"
         print("straight |")
         cv2.putText(labeled_save, 'straight', (5, 20), font, 1, (211, 229, 149), 1, cv2.LINE_AA)
-        # x_pos = int((x_ymin + x_ymax) / 2)
-        # canvas[x_pos: col, 0: row]
+        x_pos = int((x_ymin + x_ymax) / 2)
+        canvas[0: row, x_pos: col] = 1
     else:
         mode = "straight"
         print("cannot approximate")
-        # x_pos = int((x_ymin + x_ymax) / 2)
-        # canvas[x_pos: col, 0: row]
-
+        x_pos = int((x_ymin + x_ymax) / 2)
     canvas = (1*(canvas==1)) + (-1*(canvas==0))
     return mode, labeled_save, canvas

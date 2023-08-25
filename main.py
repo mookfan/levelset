@@ -6,8 +6,6 @@ import sys
 import pickle as pl
 import denoise_normal
 import levelset_weighted
-import post_process
-import distribution_params
 import phi_estimate
 import direction
 import matplotlib.pyplot as plt
@@ -142,17 +140,17 @@ def process ():
             stop_scene = 1000
 
     elif(mode_in=="debug"):
-        print("You use dataset 1")
-        rootpath = r"C:\Users\mook\PycharmProjects\LSM\images"
-        scene = 539  # 19
-        stop_scene = 740  # 160
-        r = 30
+        # print("You use dataset 1")
+        # rootpath = r"C:\Users\mook\PycharmProjects\LSM\images"
+        # scene = 19  # 19, 539
+        # stop_scene = 160  # 160, 740
+        # r = 30
 
-        # print("You use dataset Apr_26_2017_213129_2040-2340_4")
-        # rootpath = r"C:\Users\mook\PycharmProjects\LSM\dataset\Apr_26_2017_213129_2040-2340_4"
-        # scene = 5  # 19
-        # stop_scene = 3100  # 160
-        # r = 20
+        print("You use dataset Apr_26_2017_213129_2040-2340_4")
+        rootpath = r"C:\Users\mook\PycharmProjects\LSM\dataset\Apr_26_2017_213129_2040-2340_4"
+        scene = 5  # 19
+        stop_scene = 3100  # 160
+        r = 20
 
         # rootpath = r"C:\Users\mook\PycharmProjects\LSM\dataset\Apr_25_2017_234905_4"
         # scene = 5  # 19
@@ -217,52 +215,36 @@ def process ():
 
         """SET PARAMETERS"""
         if(start_bool) or re_phi:
-            mode, cafar,_ = direction.direction_est(img_denoise_sh)
+            mode, cafar, init_phi = direction.direction_est(img_denoise_sh)
             cv2.imwrite(r"C:\Users\mook\PycharmProjects\LSM\experiment\results\cafar_direction"+str(i)+".png", cafar)
-            iteration = 2600 #2600
+            iteration = 300 #2600
             # mean_pipe, std_pipe = mean_pipe_pre, std_pipe_pre
             # mean_bg, std_bg = mean_bg_pre, std_bg_pre
             # prob_p, prob_bg = prob_p_pre, prob_bg_pre
             # eta = 0.25 * np.log10(prob_bg / prob_p)
             # gauss_param = [[mean_pipe, std_pipe], [mean_bg, std_bg]]
             phi_coef = 2.0  # 6.0
-            init_phi = (-1.0 * phi_coef) * np.ones(img_denoise_sh.shape, 'float32')
+            init_phi = phi_coef * init_phi
             # init_phi[150: 350, 280:480] = phi_coef
 
-            if(mode == "left"):
-                print("""\\""")
-            # """\\"""
-                iteration = 2600  # 1600
-                # pts = np.array([[0, 0], [0, row], [350, row]], np.int32)
-                pts = np.array([[0, 200], [0, row], [350, row], [350, 200]], np.int32)
-                mew, lamda, v = 0.2, 105.0, 5.5  # -5.0 #initial inside: -
-                alpha = 2.0  # 5.0,  0.08 for n sized
-                epsilon, t = 2.0, 1.0  # 4.0
+            mew, lamda, v = 0.1, 5.0, 1.0 # -5.0 #initial inside: -
+            alpha = 1.0  # 5.0,  0.08 for n sized
+            epsilon, t = 2.0, 0.5  # 4.0
+            # mew, lamda, v = 0.1, 5.0, 1.0  # -5.0 #initial inside: -
+            # alpha = 1.0  # 5.0,  0.08 for n sized
+            # epsilon, t = 2.0, 0.5  # 4.0
 
-            elif(mode == "right"):
-                print("""/""")
-            # """/"""
-            #     iteration = 2600  # 1600
-                pts = np.array([[col, 50], [col, row], [600, row]], np.int32)  # triangle
-                mew, lamda, v = 0.1, 105.0, 5.5  # -5.0 #initial inside: -
-                alpha = 2.0  # 5.0,  0.08 for n sized
-                epsilon, t = 2.0, 2.0  # 4.0
-
-            else:
-                print("""|""")
-            # """|"""
-                iteration = 600 # 1600
-                pts = np.array([[450, 0], [450, row],[col, row], [col, 0]], np.int32)  # rectangle
-                mew, lamda, v = 0.2, 15.0, 1.0  # 70, 5
-                alpha = 2.0  # 5.0,  0.08 for n sized
-                epsilon, t = 2.0, 1.0  # 4.0
+            if(mode=="straight"):
+                iteration = 200
 
             print("initial")
-            # # pts = np.array([[col, 150], [col, row], [550, row]], np.int32)  # triangle
-            pts = pts.reshape((-1, 1, 2))
-            cv2.fillConvexPoly(init_phi, pts, 2)
+            # # # pts = np.array([[col, 150], [col, row], [550, row]], np.int32)  # triangle
+            # pts = pts.reshape((-1, 1, 2))
+            # cv2.fillConvexPoly(init_phi, pts, 2)
             # plt.imshow(init_phi)
             # plt.show()
+            init_phi_save = (255*(init_phi>0))+(0*(init_phi<=0))
+            cv2.imwrite(r"C:\Users\mook\PycharmProjects\LSM\experiment\results\init_phi" + str(i) + ".png",init_phi_save)
 
 
             levelset_param = [init_phi, iteration, mew, lamda, v, alpha, epsilon, t]
@@ -286,9 +268,12 @@ def process ():
 
             init_phi = phi_added
             iteration = 200
-            mew, lamda, v = 0.2, 15.0, -1.0  # -5.0 #initial inside: -
+            # mew, lamda, v = 0.4, 10.0, -1.0  # -5.0 #initial inside: -  #0.2, 15, -1
+            # alpha = 2.0  # 0.5,  0.08 for n sized
+            # epsilon, t = 1.0, 0.5 # 4.0
+            w, lamda, v = 0.2, 15.0, -1.0  # -5.0 #initial inside: -  #0.2, 15, -1
             alpha = 1.0  # 0.5,  0.08 for n sized
-            epsilon, t = 1.0, 1.0 # 4.0
+            epsilon, t = 1.0, 1.0  # 4.0
             levelset_param = [init_phi, iteration, mew, lamda, v, alpha, epsilon, t]
 
         print("+++++++++++++++++++++++++++++++++++++++++++++++++++")

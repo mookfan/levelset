@@ -171,7 +171,7 @@ def phi_est(phi, mode):
         result = canvas
         """reinit"""
 
-        if (abs(slope) <= 10):
+        if (abs(slope) <= 15):
             print("re initial because the distance from polynomial estimation less than 50")
             re_phi = True
 

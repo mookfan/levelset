@@ -537,7 +537,7 @@ def levelset_cal(img_gray, levelset_param, index):
             # a1, a2 = np.gradient(penalty)
             # plt.imshow(a1+a2)
             # plt.show()
-            # print("a: %.5f, b: %.5f, c: %.5f, d: -, e: %.5f" % ((coeff1 * penalty).max(), (coeff2 * length).max(), (coeff3 * area).max(), (coeff5 * observe2).max()))
+            print("a: %.5f, b: %.5f, c: %.5f, d: -, e: %.5f" % ((coeff1 * penalty).max(), (coeff2 * length).max(), (coeff3 * area).max(), (coeff5 * observe2).max()))
             """show result after iteration"""
 
             # # ax = plt.subplot(236)
